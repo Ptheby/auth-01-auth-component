@@ -1,20 +1,22 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 
 const API_KEY= 'AIzaSyD8CJ827ndHnqcL5pmventi9fROFIUOnzI'
 const SIGN_UP_URL= 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=';
+const SIGN_IN_URL='https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='
 
 
 
 
-interface AuthResponseData {
+export interface AuthResponseData {
   kind:string;
   idToken: string;
   email:string;
   refreshToken:string;
   expiresIn: string;
   localId:string;
+  registered?: boolean;
 }
 
 @Injectable({
@@ -35,6 +37,17 @@ export class AuthService {
    }
    )
    .pipe(catchError(errorRes=> {
+ );
+  }
+  login(email:string, password:string) {
+    return this.http.post<AuthResponseData>(SIGN_IN_URL + API_KEY, {
+      email: email,
+    password: password,
+    returnSecureToken:true
+    }
+    );
+  }
+  private handleError(errorRes: HttpErrorResponse) {
     let errorMessage= 'An Unknown Error Occurred!';
     if (!errorRes.error  || !errorRes.error.error) {
       return throwError(errorMessage);
@@ -44,6 +57,6 @@ export class AuthService {
         errorMessage= 'This Email Already Exists';
     }
     return  throwError(errorMessage);
-   }));
-  }
+   })
+   );
 }
